@@ -1,6 +1,6 @@
 # project
 
-A new Flutter project.
+Club Project
 
 ## Getting Started
 
