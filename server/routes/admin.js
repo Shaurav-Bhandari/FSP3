@@ -6,7 +6,9 @@ const bcrypt = require('bcrypt');
 
 // Admin login
 router.post('/login', async (req, res) => {
+  console.log('Admin login attempt received.');
   const { username, password } = req.body;
+  console.log('Attempting login for username:', username);
   try {
     const result = await db.query(
       'SELECT * FROM admins WHERE username = $1',
@@ -14,16 +16,22 @@ router.post('/login', async (req, res) => {
     );
 
     if (result.rows.length === 0) {
+      console.log('Admin not found for username:', username);
       return res.status(401).json({ error: 'Invalid credentials' });
     }
 
     const admin = result.rows[0];
-    const validPassword = await bcrypt.compare(password, admin.password_hash);
+    console.log('Admin found in DB. Comparing passwords...');
+    // console.log('Provided password:', password); // DO NOT log passwords in production
+    // console.log('Stored hash:', admin.password); // DO NOT log hashes in production
+    const validPassword = await bcrypt.compare(password, admin.password);
 
     if (!validPassword) {
+      console.log('Invalid password for admin:', username);
       return res.status(401).json({ error: 'Invalid credentials' });
     }
 
+    console.log('Password valid for admin:', username);
     const token = uuidv4();
     const tokenExpiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
 
@@ -33,14 +41,14 @@ router.post('/login', async (req, res) => {
     );
 
     // Remove sensitive data before sending response
-    const { password_hash, ...adminData } = admin;
+    const { password: adminPasswordHash, ...adminData } = admin; // Destructure and rename password to avoid sending
 
     res.json({ 
       token, 
       admin: adminData 
     });
   } catch (error) {
-    console.error('Login error:', error);
+    console.error('Login error in try-catch:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });

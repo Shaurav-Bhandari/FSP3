@@ -49,6 +49,23 @@ export function AuthProvider({ children }) {
         }
     };
 
+    const adminLogin = async (email, password) => {
+        try {
+            const response = await axios.post('/api/admin/login', { username: email, password }); // Use username for admin login
+            const { token, admin } = response.data;
+            localStorage.setItem('adminToken', token); // Use a different token key for admin
+            axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+            setUser({ ...admin, role: 'admin' }); // Set user role to admin
+            return { success: true };
+        } catch (error) {
+            console.error('Admin login error:', error);
+            return {
+                success: false,
+                error: error.response?.data?.error || 'Failed to login as admin'
+            };
+        }
+    };
+
     const register = async (userData) => {
         try {
             const response = await axios.post('/api/auth/register', userData);
@@ -74,6 +91,7 @@ export function AuthProvider({ children }) {
     const value = {
         user,
         login,
+        adminLogin,
         register,
         logout,
         loading

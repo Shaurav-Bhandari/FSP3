@@ -6,7 +6,7 @@ const pool = new Pool({
   user: 'postgres',
   host: 'localhost',
   database: 'fspfc',
-  password: 'your_password', // Replace with your actual database password
+  password: 'dcb62147abbe4cbfb8e477fe15cdfd33', // Replace with your actual database password
   port: 5432,
 });
 

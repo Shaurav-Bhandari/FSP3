@@ -1,6 +1,6 @@
-
 import { useState } from 'react';
 import { X, Calendar, Clock, User, Phone, Mail } from 'lucide-react';
+import axios from 'axios';
 
 interface BookAppointmentProps {
   isOpen: boolean;
@@ -44,23 +44,50 @@ const BookAppointment = ({ isOpen, onClose }: BookAppointmentProps) => {
     e.preventDefault();
     setIsSubmitting(true);
     
-    // Simulate booking submission
-    setTimeout(() => {
-      alert(`Appointment booked successfully! We'll send a confirmation to ${formData.email} shortly.`);
-      setFormData({
-        playerName: '',
-        age: '',
-        parentName: '',
-        phone: '',
-        email: '',
-        service: '',
-        date: '',
-        time: '',
-        message: ''
+    try {
+      const response = await axios.post('/api/sessions/book', {
+        playerName: formData.playerName,
+        age: formData.age,
+        parentName: formData.parentName,
+        phone: formData.phone,
+        email: formData.email,
+        service: formData.service,
+        date: formData.date,
+        time: formData.time,
+        message: formData.message
       });
+
+      if (response.data) {
+        alert(`Appointment booked successfully! We'll send a confirmation to ${formData.email} shortly.`);
+        setFormData({
+          playerName: '',
+          age: '',
+          parentName: '',
+          phone: '',
+          email: '',
+          service: '',
+          date: '',
+          time: '',
+          message: ''
+        });
+        onClose();
+      }
+    } catch (error: any) {
+      console.error('Booking error:', error);
+      if (error.response) {
+        // The request was made and the server responded with a status code
+        // that falls out of the range of 2xx
+        alert(`Failed to book appointment: ${error.response.data.error || 'Server error'}`);
+      } else if (error.request) {
+        // The request was made but no response was received
+        alert('Failed to connect to the server. Please check your internet connection and try again.');
+      } else {
+        // Something happened in setting up the request that triggered an Error
+        alert('An error occurred while booking. Please try again later.');
+      }
+    } finally {
       setIsSubmitting(false);
-      onClose();
-    }, 2000);
+    }
   };
 
   // Get tomorrow's date as minimum selectable date

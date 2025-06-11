@@ -10,7 +10,7 @@ const Login = () => {
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
-    const { login } = useAuth();
+    const { login, adminLogin } = useAuth();
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -26,10 +26,14 @@ const Login = () => {
         setLoading(true);
 
         try {
-            await login(formData.email, formData.password);
-            navigate('/sessions');
+            const result = await adminLogin(formData.email, formData.password);
+            if (result.success) {
+                navigate('/admin-dashboard');
+            } else {
+                setError(result.error || 'Failed to sign in as admin.');
+            }
         } catch (err) {
-            setError('Failed to sign in. Please check your credentials.');
+            setError('An unexpected error occurred during admin login.');
         } finally {
             setLoading(false);
         }
@@ -39,13 +43,10 @@ const Login = () => {
         <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
             <div className="sm:mx-auto sm:w-full sm:max-w-md">
                 <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-                    Sign in to your account
+                    Admin Login
                 </h2>
                 <p className="mt-2 text-center text-sm text-gray-600">
-                    Or{' '}
-                    <Link to="/register" className="font-medium text-blue-600 hover:text-blue-500">
-                        create a new account
-                    </Link>
+                    Please use your admin credentials to sign in.
                 </p>
             </div>
 

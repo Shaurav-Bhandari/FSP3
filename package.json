@@ -14,5 +14,8 @@
     "install:all": "npm install && npm run install:client && npm run install:admin",
     "install:client": "cd client && npm install",
     "install:admin": "cd admin-panel && npm install"
+  },
+  "dependencies": {
+    "bcryptjs": "^3.0.2"
   }
 }

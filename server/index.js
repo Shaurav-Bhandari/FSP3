@@ -4,6 +4,7 @@ const cors = require('cors');
 const path = require('path');
 const cmsRoutes = require('./routes/cms');
 const adminRoutes = require('./routes/admin');
+const sessionsRoutes = require('./routes/sessions');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -27,6 +28,7 @@ app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')));
 // API Routes
 app.use('/api', cmsRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/sessions', sessionsRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {
