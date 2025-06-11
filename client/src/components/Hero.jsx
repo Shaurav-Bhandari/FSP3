@@ -1,10 +1,8 @@
 import { Link } from 'react-router-dom';
-import { hero } from '../../client/src/constants/index.js';
-
 
 const Hero = () => {
   return (
-    <section id="home" className="hero-gradient min-h-screen flex items-center pt-20 relative overflow-hidden">
+    <section id="home-section" className="hero-gradient min-h-screen flex items-center pt-20 relative overflow-hidden">
       {/* Background Blobs */}
       <div className="absolute inset-0 overflow-hidden">
         {/* Large Blue Blob */}
@@ -21,7 +19,7 @@ const Hero = () => {
         <div className="absolute bottom-1/4 left-1/3 w-24 h-24 bg-gradient-to-br from-blue-600 to-blue-800 rounded-full opacity-15 animate-pulse" style={{ animationDelay: '1s' }}></div>
       </div>
       
-      <div className="container mx-auto px-6 flex items-center min-h-screen relative z-10">
+      <div className="container mx-auto px-6 relative z-10">
         <div className="grid lg:grid-cols-2 gap-12 items-center w-full">
           {/* Left Content */}
           <div className="space-y-8">
@@ -41,17 +39,17 @@ const Hero = () => {
               to="/contact" 
               className="inline-block bg-black text-white px-8 py-4 rounded-lg font-semibold text-lg hover:bg-gray-800 transition-all duration-300 transform hover:scale-105 shadow-lg"
             >
-              Get in touch.
+              Get in touch
             </Link>
           </div>
           
           {/* Right Content - Player Image */}
           <div className="relative flex justify-center lg:justify-end">
-            <div className="relative">
+            <div className="relative w-1/2">
               <img 
-                src={hero}
+                src="/hero.png"
                 alt="Football Player" 
-                className="w-full max-w-md h-auto object-cover rounded-2xl shadow-2xl"
+                className="w-full h-auto object-cover rounded-2xl shadow-2xl"
               />
             </div>
           </div>
@@ -61,4 +59,4 @@ const Hero = () => {
   );
 };
 
-export default Hero;
+export default Hero; 

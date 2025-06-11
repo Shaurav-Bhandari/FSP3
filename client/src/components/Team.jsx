@@ -2,18 +2,18 @@ const Team = () => {
   const coaches = [
     {
       name: "Coach Anson Nyako",
-      image: "./public/guy1.jpg",
+      image: "/guy1.jpg",
       description: "Anson is a semi-professional athlete and a certified Level One coach with hands-on experience both on and off the field. His journey has given him a deep understanding of the game's physical demands, tactical complexities, and mental challenges. Anson is passionate about helping aspiring players unlock their full potential — he believes that with dedication and the right guidance, anyone can achieve their goals. He's committed to mentoring each player with focus, discipline, and unwavering support."
     },
     {
       name: "Coach Anson Kojo Agyeman",
-      image: "/public/guy2.jpg",
+      image: "/guy2.jpg",
       description: "Anson is a driven semi-professional footballer and a certified Level 2 coach who worked his way up from amateur levels. With a strong grasp of the game's physical, tactical, and mental aspects, he brings both passion and insight to his coaching. Football has shaped his life beyond the pitch — teaching him discipline, communication, and resilience — values he now strives to pass on. Anson believes that every child willing to try deserves a chance, and he's dedicated to helping them grow through tailored guidance and encouragement."
     }
   ];
 
   return (
-    <section className="bg-gradient-to-b from-white to-gray-50 py-20">
+    <section id="team-section" className="bg-gradient-to-b from-white to-gray-50 py-20">
       <h2 className="text-5xl md:text-7xl font-bold text-center text-gray-900 mb-6">
         Meet The <span className="text-yellow-500">Team</span>
       </h2>
@@ -29,11 +29,17 @@ const Team = () => {
           <div className="space-y-6">
             {coaches.map((coach, index) => (
               <div key={index} className="flex items-start space-x-4">
-                <img 
-                  src={coach.image} 
-                  alt={coach.name}
-                  className="w-16 h-16 rounded-full object-cover shadow flex-shrink-0"
-                />
+                <div className="w-16 h-16 rounded-full overflow-hidden shadow flex-shrink-0">
+                  <img 
+                    src={coach.image} 
+                    alt={coach.name}
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      e.target.onerror = null;
+                      e.target.src = '/default-coach.jpg';
+                    }}
+                  />
+                </div>
                 <div>
                   <h4 className="text-lg font-semibold text-gray-900">{coach.name}</h4>
                   <p className="text-sm text-gray-600">
@@ -47,11 +53,17 @@ const Team = () => {
 
         {/* Image */}
         <div className="w-full">
-          <img 
-            src="https://images.pexels.com/photos/3621104/pexels-photo-3621104.jpeg?auto=compress&cs=tinysrgb&w=800" 
-            alt="Coaching Team"
-            className="w-full h-80 object-cover rounded-2xl shadow-lg"
-          />
+          <div className="w-full h-80 rounded-2xl overflow-hidden shadow-lg">
+            <img 
+              src="/team-photo.jpg"
+              alt="Coaching Team"
+              className="w-full h-full object-cover"
+              onError={(e) => {
+                e.target.onerror = null;
+                e.target.src = '/default-team.jpg';
+              }}
+            />
+          </div>
         </div>
       </div>
       
@@ -64,4 +76,4 @@ const Team = () => {
   );
 };
 
-export default Team;
+export default Team; 

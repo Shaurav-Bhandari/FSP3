@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import BookAppointment from './BookAppointment.tsx';
+import BookAppointment from '../../client/src/components/BookAppointment.tsx';
 
 const About = () => {
   const [isBookingOpen, setIsBookingOpen] = useState(false);
