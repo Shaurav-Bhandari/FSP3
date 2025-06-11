@@ -4,7 +4,7 @@ import { useAuth } from '../contexts/AuthContext';
 
 const Login = () => {
     const [formData, setFormData] = useState({
-        email: '',
+        username: '',
         password: ''
     });
     const [error, setError] = useState('');
@@ -26,7 +26,7 @@ const Login = () => {
         setLoading(true);
 
         try {
-            const result = await adminLogin(formData.email, formData.password);
+            const result = await adminLogin(formData.username, formData.password);
             if (result.success) {
                 navigate('/admin-dashboard');
             } else {
@@ -59,17 +59,17 @@ const Login = () => {
                     )}
                     <form className="space-y-6" onSubmit={handleSubmit}>
                         <div>
-                            <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-                                Email address
+                            <label htmlFor="username" className="block text-sm font-medium text-gray-700">
+                                Username
                             </label>
                             <div className="mt-1">
                                 <input
-                                    id="email"
-                                    name="email"
-                                    type="email"
-                                    autoComplete="email"
+                                    id="username"
+                                    name="username"
+                                    type="text"
+                                    autoComplete="username"
                                     required
-                                    value={formData.email}
+                                    value={formData.username}
                                     onChange={handleChange}
                                     className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                                 />
