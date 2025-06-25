@@ -1,0 +1,210 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String    @id @default(uuid())
+  name          String
+  email         String    @unique
+  passwordHash  String
+  role          String    @default("customer")
+  isActive      Boolean   @default(true)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  lastLogin     DateTime?
+
+  // Relations
+  bookings      Booking[]
+  auditLogsAsUser AuditLog[] @relation("UserAuditLogs")
+
+  @@map("users")
+}
+
+model Admin {
+  id            String    @id @default(uuid())
+  name          String
+  email         String    @unique
+  passwordHash  String
+  role          String    @default("admin")
+  isActive      Boolean   @default(true)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  lastLogin     DateTime?
+
+  // Relations
+  auditLogsAsAdmin AuditLog[] @relation("AdminAuditLogs")
+  auditLogsCreated AuditLog[] @relation("CreatedByAuditLogs")
+  contents      Content[] @relation("CreatedByContent")
+  updatedContents Content[] @relation("UpdatedByContent")
+  teamMembers   TeamMember[] @relation("CreatedByTeamMember")
+  updatedTeamMembers TeamMember[] @relation("UpdatedByTeamMember")
+  galleries     Gallery[] @relation("CreatedByGallery")
+  updatedGalleries Gallery[] @relation("UpdatedByGallery")
+  services      Service[] @relation("CreatedByService")
+  updatedServices Service[] @relation("UpdatedByService")
+  settings      Setting[] @relation("UpdatedBySetting")
+  timeSlots     TimeSlot[] @relation("CreatedByTimeSlot")
+
+  @@map("admins")
+}
+
+model Content {
+  id          String    @id @default(uuid())
+  type        String
+  title       String
+  content     String
+  orderIndex  Int       @default(0)
+  isActive    Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  createdBy   String
+  updatedBy   String
+
+  // Relations
+  createdByUser Admin @relation("CreatedByContent", fields: [createdBy], references: [id])
+  updatedByUser Admin @relation("UpdatedByContent", fields: [updatedBy], references: [id])
+
+  @@index([type])
+  @@map("content")
+}
+
+model TeamMember {
+  id          String    @id @default(uuid())
+  name        String
+  position    String
+  bio         String?
+  imageUrl    String?
+  orderIndex  Int       @default(0)
+  isActive    Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  createdBy   String
+  updatedBy   String
+
+  // Relations
+  createdByUser Admin @relation("CreatedByTeamMember", fields: [createdBy], references: [id])
+  updatedByUser Admin @relation("UpdatedByTeamMember", fields: [updatedBy], references: [id])
+
+  @@map("team_members")
+}
+
+model Gallery {
+  id          String    @id @default(uuid())
+  title       String
+  description String?
+  imageUrl    String
+  orderIndex  Int       @default(0)
+  isActive    Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  createdBy   String
+  updatedBy   String
+
+  // Relations
+  createdByUser Admin @relation("CreatedByGallery", fields: [createdBy], references: [id])
+  updatedByUser Admin @relation("UpdatedByGallery", fields: [updatedBy], references: [id])
+
+  @@map("gallery")
+}
+
+model Service {
+  id          String    @id @default(uuid())
+  name        String
+  description String
+  price       Float
+  duration    Int       // in minutes
+  isActive    Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  createdBy   String
+  updatedBy   String
+
+  // Relations
+  createdByUser Admin @relation("CreatedByService", fields: [createdBy], references: [id])
+  updatedByUser Admin @relation("UpdatedByService", fields: [updatedBy], references: [id])
+  bookings     Booking[]
+
+  @@map("services")
+}
+
+model Setting {
+  id          String    @id @default(uuid())
+  key         String    @unique
+  value       String
+  description String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  updatedBy   String
+
+  // Relations
+  updatedByUser Admin @relation("UpdatedBySetting", fields: [updatedBy], references: [id])
+
+  @@map("settings")
+}
+
+model Booking {
+  id          String    @id @default(uuid())
+  userId      String
+  serviceId   String
+  timeSlotId  String?   @unique
+  status      String    @default("pending")
+  notes       String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  // Relations
+  user        User      @relation(fields: [userId], references: [id])
+  service     Service   @relation(fields: [serviceId], references: [id])
+  timeSlot    TimeSlot? @relation(fields: [timeSlotId], references: [id])
+
+  @@map("bookings")
+}
+
+model TimeSlot {
+  id          String    @id @default(uuid())
+  serviceId   String
+  slotStart   DateTime
+  slotEnd     DateTime
+  slotDate    DateTime
+  isAvailable Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  createdBy   String
+
+  // Relations
+  createdByUser Admin    @relation("CreatedByTimeSlot", fields: [createdBy], references: [id])
+  booking      Booking?
+
+  @@index([slotDate])
+  @@map("time_slots")
+}
+
+model AuditLog {
+  id          String    @id @default(uuid())
+  adminId     String?
+  userId      String?
+  action      String
+  tableName   String
+  recordId    String
+  oldValues   Json?
+  newValues   Json?
+  ipAddress   String
+  createdAt   DateTime  @default(now())
+  createdBy   String    // Required field that references system admin
+
+  // Relations
+  admin       Admin?    @relation("AdminAuditLogs", fields: [adminId], references: [id])
+  user        User?     @relation("UserAuditLogs", fields: [userId], references: [id])
+  createdByAdmin Admin  @relation("CreatedByAuditLogs", fields: [createdBy], references: [id])
+
+  @@index([tableName, recordId])
+  @@map("audit_log")
+}

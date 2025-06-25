@@ -1,63 +1,86 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import axios from 'axios';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import { adminApi } from '../services/api';
 
-const AuthContext = createContext();
+// Create the context
+const AuthContext = createContext(null);
 
-export function useAuth() {
-    return useContext(AuthContext);
-}
-
+// Create a provider component
 export function AuthProvider({ children }) {
     const [user, setUser] = useState(null);
+    const [token, setToken] = useState(localStorage.getItem('adminToken'));
     const [loading, setLoading] = useState(true);
 
-    useEffect(() => {
-        // Check if admin is logged in
-        const token = localStorage.getItem('adminToken');
-        if (token) {
-            axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-            // Fetch admin data
-            axios.get('/api/admin/me')
-                .then(response => {
-                    setUser(response.data);
-                })
-                .catch(() => {
-                    localStorage.removeItem('adminToken');
-                    delete axios.defaults.headers.common['Authorization'];
-                })
-                .finally(() => {
-                    setLoading(false);
-                });
-        } else {
-            setLoading(false);
+    const verifyToken = useCallback(async (token) => {
+        try {
+            const response = await adminApi.getProfile();
+            console.log('Profile response:', response.data);
+            setUser(response.data);
+            return true;
+        } catch (error) {
+            console.error('Profile error:', error);
+            localStorage.removeItem('adminToken');
+            setToken(null);
+            setUser(null);
+            return false;
         }
     }, []);
 
-    const login = async (username, password) => {
+    useEffect(() => {
+        console.log('AuthProvider useEffect - token at mount/update:', token);
+        if (token) {
+            verifyToken(token).finally(() => {
+                setLoading(false);
+            });
+        } else {
+            setLoading(false);
+        }
+    }, [token, verifyToken]);
+
+    const login = async (name, password) => {
+        console.log('Login attempt with:', { name });
         try {
-            const response = await axios.post('/api/admin/login', { username, password });
-            const { token, admin } = response.data;
-            localStorage.setItem('adminToken', token);
-            axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+            const response = await adminApi.login({ name, password });
+            console.log('Login API response:', response.data);
+            const { success, token: newToken, admin, message } = response.data;
+            
+            if (!success) {
+                console.log('Login failed (backend indicated):', message);
+                return { 
+                    success: false, 
+                    error: message || 'Login failed' 
+                };
+            }
+
+            // NEW LOG: Check newToken value before storing
+            console.log('Value of newToken before localStorage.setItem:', newToken);
+
+            // Store token
+            localStorage.setItem('adminToken', newToken);
+            console.log('Token written to localStorage:', localStorage.getItem('adminToken'));
+            setToken(newToken);
             setUser(admin);
-            return { success: true };
+            console.log('Login successful, user and token state set.', admin);
+
+            return { success: true, user: admin };
         } catch (error) {
-            console.error('Login error:', error);
-            return {
-                success: false,
-                error: error.response?.data?.error || 'Failed to login'
+            console.error('Login error (caught):', error);
+            return { 
+                success: false, 
+                error: error.response?.data?.message || 'Login failed' 
             };
         }
     };
 
     const logout = async () => {
         try {
-            await axios.post('/api/admin/logout');
+            if (token) {
+                await adminApi.logout();
+            }
         } catch (error) {
             console.error('Logout error:', error);
         } finally {
             localStorage.removeItem('adminToken');
-            delete axios.defaults.headers.common['Authorization'];
+            setToken(null);
             setUser(null);
         }
     };
@@ -74,4 +97,13 @@ export function AuthProvider({ children }) {
             {!loading && children}
         </AuthContext.Provider>
     );
-} 
+}
+
+// Create a custom hook for using the auth context
+export function useAuth() {
+    const context = useContext(AuthContext);
+    if (context === null) {
+        throw new Error('useAuth must be used within an AuthProvider');
+    }
+    return context;
+}
